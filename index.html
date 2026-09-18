@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>บันทึกสถิติ V13 - วิเคราะห์ความน่าจะเป็น</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif;background:#f3f4f6;color:#111827}
+header{background:#111827;color:#fff;padding:18px 16px;position:sticky;top:0;z-index:5}h1{margin:0;font-size:23px}header small{opacity:.75}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:9px;background:#fff;position:sticky;top:73px;z-index:4;border-bottom:1px solid #ddd}
+nav button{border:0;border-radius:12px;padding:11px 3px;background:#e5e7eb;font-weight:800;font-size:14px}nav button.active{background:#111827;color:#fff}
+main{max-width:720px;margin:auto;padding:14px}.card{background:#fff;border-radius:17px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px #0000000b}
+label{display:block;font-weight:800;font-size:15px;margin:12px 0 7px}
+input,textarea{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:11px;font-size:17px;background:#fff}
+.choices{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.choice{padding:12px 4px;border:1px solid #d1d5db;border-radius:11px;background:#fff;font-weight:800;font-size:16px;text-align:center}.choice.selected{background:#111827;color:#fff;border-color:#111827}.symbol-x{color:#dc2626;font-size:24px;font-weight:900}.symbol-o{color:#2563eb;font-size:24px;font-weight:900}.symbol-x.selected{background:#fee2e2;color:#dc2626;border-color:#dc2626}.symbol-o.selected{background:#dbeafe;color:#2563eb;border-color:#2563eb}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.size3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.bigchoice{padding:15px;border:1px solid #d1d5db;border-radius:12px;background:#fff;font-size:20px;font-weight:900}.bigchoice.selected{background:#111827;color:#fff}
+.primary{width:100%;padding:15px;border:0;border-radius:12px;background:#111827;color:#fff;font-size:18px;font-weight:900;margin-top:15px}
+.secondary{padding:10px 12px;border:0;border-radius:10px;background:#e5e7eb;font-weight:800}.danger{background:#fee2e2;color:#991b1b}
+.hidden{display:none}.muted{color:#6b7280;font-size:13px}.toolbar{display:flex;gap:8px;margin-bottom:10px}.toolbar>*{flex:1}
+.entry{border-top:1px solid #eee;padding:13px 0}.entry:first-child{border-top:0}.row{display:flex;justify-content:space-between;gap:8px}.plus{color:#047857;font-weight:900}.minus{color:#b91c1c;font-weight:900}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#f9fafb;border-radius:12px;padding:12px}.stat b{display:block;font-size:23px;margin-top:4px}
+.setting{display:flex;gap:8px;margin:7px 0}.setting input{flex:1}.tag{display:inline-block;background:#f3f4f6;border-radius:9px;padding:7px 9px;margin:3px;font-weight:700}.tag button{border:0;background:none;font-weight:900}
+.small{font-size:13px;color:#6b7280;margin-top:14px}.analysis{background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin-top:10px}.analysis h4{margin:0 0 10px;font-size:17px}.bar{height:10px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:5px 0 10px}.bar i{display:block;height:100%;background:#111827;border-radius:99px}.pill{display:inline-block;padding:6px 9px;border-radius:999px;background:#f3f4f6;margin:3px;font-weight:800}.warn{color:#92400e;background:#fef3c7;padding:9px;border-radius:10px}.good{color:#065f46;background:#d1fae5;padding:9px;border-radius:10px}
+</style>
+</head>
+<body>
+<header><h1>📊 บันทึกสถิติ</h1><small>V13 • แก้ปุ่มเลือก บันทึก และเมนู</small></header>
+<nav>
+<button class="active" onclick="tab('add',this)">➕ บันทึก</button>
+<button onclick="tab('history',this)">📋 ประวัติ</button>
+<button onclick="tab('stats',this)">📈 สถิติ</button>
+<button onclick="tab('settings',this)">⚙️ ตั้งค่า</button>
+</nav>
+<main>
+<section id="add">
+<div class="card">
+<label>คีม</label><div id="kimChoices" class="choices">
+<button type="button" class="choice" data-key="kim" data-value="0" onclick="pick('kim','0')">0</button>
+<button type="button" class="choice" data-key="kim" data-value="0.5" onclick="pick('kim','0.5')">0.5</button>
+<button type="button" class="choice" data-key="kim" data-value="1" onclick="pick('kim','1')">1</button>
+<button type="button" class="choice" data-key="kim" data-value="1.5" onclick="pick('kim','1.5')">1.5</button>
+<button type="button" class="choice" data-key="kim" data-value="2" onclick="pick('kim','2')">2</button>
+</div>
+<label>ขา</label><div id="legChoices" class="choices">
+<button type="button" class="choice" data-key="leg" data-value="1" onclick="pick('leg','1')">1</button>
+<button type="button" class="choice" data-key="leg" data-value="2" onclick="pick('leg','2')">2</button>
+<button type="button" class="choice" data-key="leg" data-value="3" onclick="pick('leg','3')">3</button>
+<button type="button" class="choice" data-key="leg" data-value="4" onclick="pick('leg','4')">4</button>
+<button type="button" class="choice" data-key="leg" data-value="5" onclick="pick('leg','5')">5</button>
+<button type="button" class="choice" data-key="leg" data-value="6" onclick="pick('leg','6')">6</button>
+<button type="button" class="choice" data-key="leg" data-value="7" onclick="pick('leg','7')">7</button>
+<button type="button" class="choice" data-key="leg" data-value="8" onclick="pick('leg','8')">8</button>
+</div>
+<label>เล่น คู่ หรือ คี่</label><div class="two"><button type="button" id="even" class="bigchoice" onclick="pick('oddEven','คู่')">คู่</button><button type="button" id="odd" class="bigchoice" onclick="pick('oddEven','คี่')">คี่</button></div>
+<label>ขนาดตัว</label><div class="size3"><button type="button" id="sizeSmall" class="bigchoice" onclick="pick('size','เล็ก')">เล็ก</button><button type="button" id="sizeMedium" class="bigchoice" onclick="pick('size','กลาง')">กลาง</button><button type="button" id="sizeLarge" class="bigchoice" onclick="pick('size','ใหญ่')">ใหญ่</button></div>
+<label>จำนวนเงิน</label><div id="moneyChoices" class="choices">
+<button type="button" class="choice" data-key="money" data-value="0" onclick="pick('money','0')">0</button>
+<button type="button" class="choice" data-key="money" data-value="50" onclick="pick('money','50')">50</button>
+<button type="button" class="choice" data-key="money" data-value="100" onclick="pick('money','100')">100</button>
+<button type="button" class="choice" data-key="money" data-value="200" onclick="pick('money','200')">200</button>
+<button type="button" class="choice" data-key="money" data-value="500" onclick="pick('money','500')">500</button>
+<button type="button" class="choice" data-key="money" data-value="1000" onclick="pick('money','1000')">1,000</button>
+<button type="button" class="choice" data-key="money" data-value="2000" onclick="pick('money','2000')">2,000</button>
+</div><input id="moneyCustom" type="number" inputmode="decimal" placeholder="หรือใส่จำนวนเงินเอง" style="margin-top:8px">
+<label>น้ำหนักที่ออก</label><input id="weight" type="number" step="0.01" inputmode="decimal" placeholder="เช่น 1.25">
+<label>สัญลักษณ์</label><div id="symbolChoices" class="choices">
+<button type="button" class="choice symbol-x" data-key="symbol" data-value="X" onclick="pick('symbol','X')">X</button>
+<button type="button" class="choice symbol-o" data-key="symbol" data-value="O" onclick="pick('symbol','O')">O</button>
+</div>
+<label>ผล + / -</label><div class="two"><button type="button" id="win" class="bigchoice" onclick="pick('result','+')">＋</button><button type="button" id="loss" class="bigchoice" onclick="pick('result','-')">－</button></div>
+<label>หมายเหตุ</label><textarea id="note" rows="3" placeholder="รายละเอียดเพิ่มเติม"></textarea>
+<div id="saveMsg" class="muted" style="margin-top:10px"></div><button type="button" id="saveBtn" class="primary">💾 บันทึกข้อมูล</button>
+</div>
+</section>
+
+<section id="history" class="hidden"><div class="card"><div class="toolbar"><input id="search" placeholder="ค้นหา..." oninput="historyView()"><button class="secondary danger" onclick="clearAll()">ล้างทั้งหมด</button></div><div id="historyList"></div></div></section>
+
+<section id="stats" class="hidden">
+<div class="card"><h3>📈 สรุปทั้งหมด</h3><div id="statsGrid" class="stats"></div></div>
+<div class="card"><h3>📊 ตามคู่ / คี่</h3><div id="oe"></div></div>
+<div class="card"><h3>📊 ตามคีม</h3><div id="ks"></div></div>
+<div class="card"><h3>📊 ตามขา</h3><div id="ls"></div></div>
+<div class="card"><h3>📊 ตามขนาดตัว</h3><div id="zs"></div></div><div class="card"><h3>📊 ตามสัญลักษณ์</h3><div id="ss"></div></div>
+<div class="card"><h3>🔎 วิเคราะห์แนวโน้ม</h3><p class="muted">เลือกคีมและขาเพื่อดูสถิติย้อนหลังของคู่/คี่ พร้อมผลลัพธ์อื่น ๆ ที่เคยเกิดขึ้นในชุดข้อมูลเดียวกัน</p><div class="two"><div><label>คีม</label><select id="anKim" onchange="analysisView()" style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:11px;font-size:17px;background:#fff"></select></div><div><label>ขา</label><select id="anLeg" onchange="analysisView()" style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:11px;font-size:17px;background:#fff"></select></div></div><label>จำนวนข้อมูลย้อนหลัง</label><select id="anLimit" onchange="analysisView()" style="width:100%;padding:12px;border:1px solid #d1d5db;border-radius:11px;font-size:17px;background:#fff"><option value="all">ทั้งหมด</option><option value="10">10 ครั้งล่าสุด</option><option value="20">20 ครั้งล่าสุด</option><option value="50">50 ครั้งล่าสุด</option><option value="100">100 ครั้งล่าสุด</option></select><div id="analysisResult" class="analysis"><p class="muted">เลือกคีมและขาเพื่อเริ่มวิเคราะห์</p></div></div>
+<div class="card"><button class="secondary" onclick="csv()">⬇️ ส่งออก CSV</button></div>
+</section>
+
+<section id="settings" class="hidden"><div class="card"><h3>⚙️ ตั้งค่าตัวเลือก</h3>
+<div class="small">คีม</div><div id="kimSet"></div><div class="setting"><input id="newKim" placeholder="เช่น 6"><button class="secondary" onclick="add('kim','newKim')">＋ เพิ่ม</button></div>
+<div class="small">ขา</div><div id="legSet"></div><div class="setting"><input id="newLeg" placeholder="เช่น 6"><button class="secondary" onclick="add('leg','newLeg')">＋ เพิ่ม</button></div>
+<div class="small">จำนวนเงิน</div><div id="moneySet"></div><div class="setting"><input id="newMoney" type="number" placeholder="เช่น 200"><button class="secondary" onclick="add('money','newMoney')">＋ เพิ่ม</button></div>
+<div class="small">ขนาดตัว</div><div id="sizeSet"></div><div class="setting"><input id="newSize" placeholder="เช่น ใหญ่"><button class="secondary" onclick="add('size','newSize')">＋ เพิ่ม</button></div>
+<div class="small">สัญลักษณ์</div><div id="symbolSet"></div><div class="setting"><input id="newSymbol" placeholder="เช่น ⭐"><button class="secondary" onclick="add('symbol','newSymbol')">＋ เพิ่ม</button></div>
+<div class="small">ค่าน้ำ (%)</div>
+<div class="setting"><input id="waterRate" type="number" min="0" step="0.1" value="10" placeholder="10"><button class="secondary" onclick="saveWaterRate()">💾 บันทึกค่าน้ำ</button></div>
+<p class="muted">ค่าเริ่มต้น 10% — ระบบจะหักค่าน้ำเฉพาะรายการที่ผลเป็น + ตามที่กำหนด</p>
+<p class="muted">เพิ่มหรือลบตัวเลือกได้เอง ตัวเลือกจะปรากฏในหน้าบันทึกทันที</p>
+</div></section>
+</main>
+
+<script>
+const defaults={kim:['0','0.5','1','1.5','2'],leg:['1','2','3','4','5','6','7','8'],money:['0','50','100','200','500','1000','2000'],symbol:['X','O'],size:['เล็ก','กลาง','ใหญ่']};
+let opts;
+try {
+  const saved=JSON.parse(localStorage.getItem('statSettingsV2')||'null');
+  opts=saved ? {
+    kim:Array.isArray(saved.kim)&&saved.kim.length?saved.kim:JSON.parse(JSON.stringify(defaults.kim)),
+    leg:Array.isArray(saved.leg)&&saved.leg.length?saved.leg:JSON.parse(JSON.stringify(defaults.leg)),
+    money:Array.isArray(saved.money)&&saved.money.length?saved.money:JSON.parse(JSON.stringify(defaults.money)),
+    symbol:Array.isArray(saved.symbol)&&saved.symbol.length?saved.symbol:JSON.parse(JSON.stringify(defaults.symbol)),
+    size:Array.isArray(saved.size)&&saved.size.length?saved.size:JSON.parse(JSON.stringify(defaults.size))
+  } : JSON.parse(JSON.stringify(defaults));
+} catch(e) {
+  opts=JSON.parse(JSON.stringify(defaults));
+}
+let data=[];try{const raw=JSON.parse(localStorage.getItem('statEntries')||'[]');data=Array.isArray(raw)?raw:[]}catch(e){data=[];}
+let pickState={kim:'',leg:'',oddEven:'',money:'',result:'',symbol:'',size:''};
+
+function saveOpts(){localStorage.setItem('statSettingsV2',JSON.stringify(opts))}
+function tab(id,b){
+  document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));
+  const sec=document.getElementById(id); if(sec)sec.classList.remove('hidden');
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  if(b)b.classList.add('active');
+  else {const n=document.querySelector('nav button[onclick*="tab(\\''+id+'\\'"]');if(n)n.classList.add('active');}
+  if(id==='history')historyView();
+  if(id==='stats')statsView();
+  if(id==='settings')settingsView();
+}
+function renderButtons(id,key){
+  const box=document.getElementById(id);
+  if(!box)return;
+  box.querySelectorAll('.choice[data-key="'+key+'"]').forEach(btn=>{
+    btn.classList.toggle('selected',pickState[key]===btn.dataset.value);
+  });
+}
+function esc(v){return String(v).replaceAll('\\','\\\\').replaceAll("'","\\'")}
+function pick(key,v){
+  if(key!=='dummy') pickState[key]=String(v);
+  if(key==='money' && document.getElementById('moneyCustom')) document.getElementById('moneyCustom').value='';
+  if(key==='symbol' && document.getElementById('symbolCustom')) document.getElementById('symbolCustom').value='';
+  renderAll();
+}
+function getWaterRate(){let r=Number(localStorage.getItem('waterRate')||10);return isFinite(r)&&r>=0?r:10}
+function saveWaterRate(){let r=Number(document.getElementById('waterRate').value);if(!isFinite(r)||r<0){alert('กรุณาใส่ค่าน้ำเป็น 0 หรือมากกว่า');return}localStorage.setItem('waterRate',String(r));alert('บันทึกค่าน้ำ '+r+'% เรียบร้อยครับ');statsView();historyView()}
+function save(){
+  try{
+    const msg=document.getElementById('saveMsg');
+    const moneyEl=document.getElementById('moneyCustom');
+    const weightEl=document.getElementById('weight');
+    const noteEl=document.getElementById('note');
+    const moneyInput=(moneyEl?.value||'').trim();
+    const money=Number(moneyInput||pickState.money);
+
+    if(pickState.kim===''||pickState.leg===''||pickState.oddEven===''||pickState.size===''||pickState.result===''){
+      if(msg)msg.textContent='⚠️ กรุณาเลือก คีม + ขา + คู่/คี่ + ขนาดตัว + ผล +/- ให้ครบก่อนบันทึก';
+      else alert('กรุณาเลือก คีม + ขา + คู่/คี่ + ผล +/- ให้ครบก่อนบันทึก');
+      return false;
+    }
+    if(!Number.isFinite(money)||money<0){
+      if(msg)msg.textContent='⚠️ กรุณาเลือกจำนวนเงิน หรือใส่จำนวนเงินตั้งแต่ 0 บาทขึ้นไป';
+      else alert('กรุณาเลือกจำนวนเงิน หรือใส่จำนวนเงินตั้งแต่ 0 บาทขึ้นไป');
+      return false;
+    }
+
+    const rate=getWaterRate();
+    const water=pickState.result==='+' ? money*rate/100 : 0;
+    const net=pickState.result==='+' ? money-water : -money;
+
+    const e={
+      id:Date.now(),
+      date:new Date().toLocaleString('th-TH'),
+      kim:String(pickState.kim),
+      leg:String(pickState.leg),
+      oddEven:String(pickState.oddEven),
+      size:String(pickState.size),
+      money:money,
+      waterRate:rate,
+      water:water,
+      net:net,
+      weight:Number(weightEl?.value)||0,
+      symbol:(document.getElementById('symbolCustom')?.value||pickState.symbol||'').trim(),
+      result:String(pickState.result),
+      note:(noteEl?.value||'').trim()
+    };
+
+    data.unshift(e);
+    try{
+      localStorage.setItem('statEntries',JSON.stringify(data));
+    }catch(storageError){
+      data.shift();
+      throw storageError;
+    }
+
+    pickState={kim:'',leg:'',oddEven:'',money:'',result:'',symbol:'',size:''};
+    if(moneyEl)moneyEl.value='';
+    if(weightEl)weightEl.value='';
+    if(noteEl)noteEl.value='';
+    const sym=document.getElementById('symbolCustom'); if(sym)sym.value='';
+    renderAll();
+
+    if(msg){
+      msg.textContent='✅ บันทึกสำเร็จ | แทง '+money.toLocaleString()+' บาท | ค่าน้ำ '+water.toLocaleString(undefined,{maximumFractionDigits:2})+' บาท | สุทธิ '+(net>=0?'+':'')+net.toLocaleString(undefined,{maximumFractionDigits:2})+' บาท';
+      setTimeout(()=>{if(msg)msg.textContent=''},5000);
+    }else{
+      alert('บันทึกสำเร็จ: สุทธิ '+net.toLocaleString(undefined,{maximumFractionDigits:2})+' บาท');
+    }
+    return false;
+  }catch(err){
+    const msg=document.getElementById('saveMsg');
+    const text='❌ บันทึกไม่สำเร็จ: '+(err?.message||'เกิดข้อผิดพลาด');
+    if(msg)msg.textContent=text; else alert(text);
+    console.error(err);
+    return false;
+  }
+}
+function historyView(){let q=(document.getElementById('search').value||'').toLowerCase();let a=data.filter(e=>JSON.stringify(e).toLowerCase().includes(q));document.getElementById('historyList').innerHTML=a.length?a.map(e=>{let water=e.water!==undefined?Number(e.water):(e.result==='+'?Number(e.money)*getWaterRate()/100:0);let net=e.net!==undefined?Number(e.net):(e.result==='+'?Number(e.money)-water:-Number(e.money));return '<div class="entry"><div class="row"><b>'+e.oddEven+' · คีม '+(e.kim||'-')+' · ขา '+(e.leg||'-')+' · ตัว '+(e.size||'-')+'</b><span class="'+(e.result==='+'?'plus':'minus')+'">'+e.result+'</span></div><div>💰 แทง '+Number(e.money).toLocaleString()+' บาท · 💧 ค่าน้ำ '+water.toLocaleString(undefined,{maximumFractionDigits:2})+' บาท</div><div>💵 สุทธิ <b class="'+(net>=0?'plus':'minus')+'">'+net.toLocaleString(undefined,{maximumFractionDigits:2})+' บาท</b> · ⚖️ '+(e.weight||0)+' · '+(e.symbol||'-')+'</div><div class="muted">'+e.date+(e.note?' · '+e.note:'')+'</div><button class="secondary danger" onclick="del('+e.id+')">ลบ</button></div>'}).join(''):'<p class="muted">ยังไม่มีข้อมูล</p>'}
+function del(id){if(confirm('ลบรายการนี้?')){data=data.filter(e=>e.id!==id);localStorage.setItem('statEntries',JSON.stringify(data));historyView();statsView()}}
+function clearAll(){if(confirm('ต้องการลบข้อมูลทั้งหมดจริงหรือไม่?')){data=[];localStorage.removeItem('statEntries');historyView();statsView()}}
+function sum(a){let p=a.filter(e=>e.result==='+').length,n=a.length,stake=a.reduce((s,e)=>s+Number(e.money||0),0),water=a.reduce((s,e)=>s+(e.water!==undefined?Number(e.water):(e.result==='+'?Number(e.money||0)*getWaterRate()/100:0)),0),net=a.reduce((s,e)=>s+(e.net!==undefined?Number(e.net):(e.result==='+'?Number(e.money||0)-Number(e.money||0)*getWaterRate()/100:-Number(e.money||0))),0);return{n,p,m:n-p,stake,water,net,avg:n?a.reduce((s,e)=>s+Number(e.weight||0),0)/n:0}}
+function groups(key){let g={};data.forEach(e=>(g[e[key]||'-']??=[]).push(e));return Object.entries(g).sort((a,b)=>b[1].length-a[1].length).map(([k,a])=>{let s=sum(a);return '<div class="entry"><b>'+k+'</b><br>ทั้งหมด '+s.n+' · + '+s.p+' · - '+s.m+' · ค่าน้ำ '+s.water.toLocaleString(undefined,{maximumFractionDigits:2})+' · สุทธิ <span class="'+(s.net>=0?'plus':'minus')+'">'+s.net.toLocaleString(undefined,{maximumFractionDigits:2})+' บาท</span></div>'}).join('')||'<p class="muted">ยังไม่มีข้อมูล</p>'}
+function statsView(){let s=sum(data),rate=getWaterRate();document.getElementById('statsGrid').innerHTML='<div class="stat">รายการ<b>'+s.n+'</b></div><div class="stat">ผล +<b>'+s.p+'</b></div><div class="stat">ผล -<b>'+s.m+'</b></div><div class="stat">แทงรวม<b>'+s.stake.toLocaleString()+'</b></div><div class="stat">ค่าน้ำ '+rate+'%<b>'+s.water.toLocaleString(undefined,{maximumFractionDigits:2})+'</b></div><div class="stat">สุทธิ<b class="'+(s.net>=0?'plus':'minus')+'">'+s.net.toLocaleString(undefined,{maximumFractionDigits:2})+'</b></div><div class="stat">น้ำหนักเฉลี่ย<b>'+s.avg.toFixed(2)+'</b></div>';document.getElementById('oe').innerHTML=groups('oddEven');document.getElementById('ks').innerHTML=groups('kim');document.getElementById('ls').innerHTML=groups('leg');document.getElementById('zs').innerHTML=groups('size');document.getElementById('ss').innerHTML=groups('symbol');analysisSetup();if(document.getElementById('waterRate'))document.getElementById('waterRate').value=rate}
+function settingsView(){['kim','leg','money','size','symbol'].forEach(k=>{let id=k==='kim'?'kimSet':k==='leg'?'legSet':k==='money'?'moneySet':k==='size'?'sizeSet':'symbolSet';document.getElementById(id).innerHTML=opts[k].map((v,i)=>'<span class="tag">'+v+' <button onclick="removeOpt(\''+k+'\','+i+')">×</button></span>').join('')})}
+function add(k,id){let v=document.getElementById(id).value.trim();if(!v)return;if(!opts[k].includes(v))opts[k].push(v);document.getElementById(id).value='';saveOpts();settingsView();renderAll()}
+function removeOpt(k,i){if(opts[k].length<=1){alert('ต้องเหลืออย่างน้อย 1 ตัวเลือกครับ');return}opts[k].splice(i,1);saveOpts();settingsView();renderAll()}
+function makeChoiceButtons(boxId,key,values,extraClass=''){
+  const box=document.getElementById(boxId);
+  if(!box)return;
+  box.innerHTML=values.map(v=>{
+    const val=String(v);
+    const safe=val.replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    const js=val.replaceAll('\\','\\\\').replaceAll("'","\\'");
+    const cls=key==='symbol' ? (val==='X'?'choice symbol-x':'choice symbol-o') : 'choice';
+    return '<button type="button" class="'+cls+' '+extraClass+'" data-key="'+safe+'" data-value="'+safe+'" onclick="pick(\''+key+'\',\''+js+'\')">'+safe+'</button>';
+  }).join('');
+}
+function renderAll(){
+  makeChoiceButtons('kimChoices','kim',opts.kim);
+  makeChoiceButtons('legChoices','leg',opts.leg);
+  makeChoiceButtons('moneyChoices','money',opts.money);
+  makeChoiceButtons('symbolChoices','symbol',opts.symbol);
+  document.getElementById('even').classList.toggle('selected',pickState.oddEven==='คู่');
+  document.getElementById('odd').classList.toggle('selected',pickState.oddEven==='คี่');
+  document.getElementById('win').classList.toggle('selected',pickState.result==='+');
+  document.getElementById('loss').classList.toggle('selected',pickState.result==='-');
+  document.getElementById('sizeSmall').classList.toggle('selected',pickState.size==='เล็ก');
+  document.getElementById('sizeMedium').classList.toggle('selected',pickState.size==='กลาง');
+  document.getElementById('sizeLarge').classList.toggle('selected',pickState.size==='ใหญ่');
+  document.getElementById('saveBtn').onclick=save;
+}
+function pct(n,d){return d?((n/d)*100):0}
+function dist(arr,key){const m={};arr.forEach(e=>{const v=e[key]||'-';m[v]=(m[v]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
+function analysisSetup(){const k=document.getElementById('anKim'),l=document.getElementById('anLeg');if(!k||!l)return;const oldK=k.value,oldL=l.value;k.innerHTML=opts.kim.map(v=>'<option value="'+String(v).replaceAll('"','&quot;')+'">'+v+'</option>').join('');l.innerHTML=opts.leg.map(v=>'<option value="'+String(v).replaceAll('"','&quot;')+'">'+v+'</option>').join('');if(opts.kim.includes(oldK))k.value=oldK;if(opts.leg.includes(oldL))l.value=oldL;analysisView()}
+function analysisView(){const out=document.getElementById('analysisResult');const k=document.getElementById('anKim')?.value,l=document.getElementById('anLeg')?.value,lim=document.getElementById('anLimit')?.value||'all';if(!out||!k||!l)return;let a=data.filter(e=>String(e.kim)===String(k)&&String(e.leg)===String(l));a.sort((x,y)=>Number(y.id)-Number(x.id));if(lim!=='all')a=a.slice(0,Number(lim));const n=a.length;if(!n){out.innerHTML='<p class="muted">ยังไม่มีข้อมูลย้อนหลังสำหรับ <b>คีม '+k+' · ขา '+l+'</b></p>';return}const oe=dist(a,'oddEven'),sz=dist(a,'size'),sy=dist(a,'symbol'),rs=dist(a,'result');const top=oe[0];let html='<h4>🔎 คีม '+k+' · ขา '+l+'</h4><p><b>พบข้อมูล '+n+' ครั้ง</b></p>';if(n<10)html+='<div class="warn">⚠️ ข้อมูลยังน้อย ('+n+' ครั้ง) เปอร์เซ็นต์อาจเปลี่ยนได้มาก</div>';html+='<p><b>คู่ / คี่</b></p>';oe.forEach(([v,c])=>{html+='<div>'+v+' — <b>'+c+' ครั้ง ('+pct(c,n).toFixed(1)+'%)</b><div class="bar"><i style="width:'+pct(c,n)+'%"></i></div></div>'});html+='<p><b>ขนาดตัว</b> ';sz.forEach(([v,c])=>html+='<span class="pill">'+v+' '+c+' ('+pct(c,n).toFixed(1)+'%)</span>');html+='</p><p><b>สัญลักษณ์</b> ';sy.forEach(([v,c])=>html+='<span class="pill">'+v+' '+c+' ('+pct(c,n).toFixed(1)+'%)</span>');html+='</p><p><b>ผลย้อนหลัง</b> ';rs.forEach(([v,c])=>html+='<span class="pill">'+v+' '+c+' ('+pct(c,n).toFixed(1)+'%)</span>');html+='</p>';if(top)html+='<div class="good">📌 แนวโน้มจากข้อมูลชุดนี้: <b>'+top[0]+'</b> มีสัดส่วนสูงสุด '+pct(top[1],n).toFixed(1)+'% ('+top[1]+'/'+n+')<br><span class="muted">นี่เป็นสถิติย้อนหลัง ไม่ใช่การรับประกันผลครั้งถัดไป</span></div>';out.innerHTML=html}
+function csv(){if(!data.length){alert('ยังไม่มีข้อมูล');return}let h=['วันที่','คีม','ขา','คู่/คี่','ขนาดตัว','จำนวนเงิน','ค่าน้ำ %','ค่าน้ำ','น้ำหนัก','สัญลักษณ์','ผล','สุทธิ','หมายเหตุ'],r=data.map(e=>[e.date,e.kim,e.leg,e.oddEven,e.size??'-',e.money,e.waterRate??getWaterRate(),e.water??(e.result==='+'?Number(e.money)*getWaterRate()/100:0),e.weight,e.symbol,e.result,e.net??(e.result==='+'?Number(e.money)-Number(e.money)*getWaterRate()/100:-Number(e.money)),e.note]),c='\ufeff'+[h,...r].map(x=>x.map(v=>'\"'+String(v??'').replaceAll('\"','\"\"')+'\"').join(',')).join('\\n'),b=new Blob([c],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='บันทึกสถิติ_หักค่าน้ำ.csv';a.click();URL.revokeObjectURL(a.href)}
+
+renderAll();statsView();
+</script>
+</body></html>
