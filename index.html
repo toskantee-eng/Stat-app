@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>ระบบบันทึกและวิเคราะห์สถิติ</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f6;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,sans-serif}
+header{background:#111827;color:white;padding:26px 18px 20px}
+header h1{margin:0;font-size:23px;line-height:1.25}header p{margin:5px 0 0;color:#cbd5e1;font-size:13px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:white;padding:8px;position:sticky;top:0;z-index:20}
+nav button{border:0;border-radius:14px;padding:11px 3px;background:#e9edf2;color:#1683f5;font-weight:800;font-size:13px}
+nav button.active{background:#111827;color:white}
+main{max-width:760px;margin:auto;padding:14px}
+.card{background:white;border-radius:20px;padding:20px;margin-bottom:14px;box-shadow:0 2px 12px #0000000a}
+label{display:block;font-size:15px;font-weight:800;margin:14px 0 8px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.pick{min-height:52px;border:2px solid #d5dae1;background:#fff;border-radius:14px;color:#1683f5;font-size:17px;font-weight:800;touch-action:manipulation}
+.pick.selected{background:#1683f5;color:#fff;border-color:#1683f5}
+.x{color:#c71919}.o{color:#1769c2}.x.selected{background:#c71919;color:#fff;border-color:#c71919}.o.selected{background:#1769c2;color:#fff;border-color:#1769c2}
+input,textarea{width:100%;border:2px solid #d5dae1;border-radius:13px;padding:12px;font-size:16px;background:#fff;color:#111827}
+textarea{resize:vertical}
+.primary{width:100%;border:0;border-radius:15px;background:#15803d;color:#fff;padding:14px;font-size:17px;font-weight:900;margin-top:12px;touch-action:manipulation}
+.secondary{border:0;border-radius:13px;background:#e8edf3;color:#1677df;padding:11px 14px;font-weight:800;font-size:14px;touch-action:manipulation}
+.danger{background:#fee2e2;color:#b91c1c}
+.msg{font-weight:800;margin-top:12px;line-height:1.5}
+.hidden{display:none!important}.muted{color:#6b7280}
+.entry{border:1px solid #e0e5ea;border-radius:17px;padding:15px;margin-top:12px}
+.row{display:flex;justify-content:space-between;gap:8px}
+.plus{color:#087443}.minus{color:#c51f1f}
+.entry button{margin-top:10px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.stat{background:#f3f4f6;border-radius:13px;padding:10px}.stat b{display:block;font-size:18px;margin-top:3px}
+.bar{height:9px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:5px 0 12px}.bar i{display:block;height:100%;background:#1683f5}
+.pill{display:inline-block;background:#eef2f7;border-radius:99px;padding:6px 9px;margin:3px}
+.good{background:#ecfdf5;border:1px solid #bbf7d0;border-radius:14px;padding:13px;margin-top:12px}
+.warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:13px;margin-top:12px}
+.setting{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px}
+.tag{display:inline-flex;align-items:center;background:#eef2f7;border-radius:99px;padding:6px 9px;margin:3px}
+.tag button{border:0;background:transparent;color:#b91c1c;font-size:16px;font-weight:900}
+@media(max-width:430px){header h1{font-size:21px}.pick{font-size:16px;min-height:50px}nav button{font-size:12px;padding:10px 2px}label{font-size:14px}input,textarea{font-size:15px}}
+
+.xo-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:10px}.xo-stat{background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:11px;text-align:center}.xo-stat .xo-big{font-size:24px;font-weight:900;line-height:1.1}.xo-road-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-top:12px;padding-bottom:4px}.xo-road{display:grid;grid-template-rows:repeat(6,42px);grid-auto-columns:42px;grid-auto-flow:column;gap:4px;min-width:max-content;padding:8px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px}.xo-cell{width:42px;height:42px;display:flex;align-items:center;justify-content:center}.xo-dot{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;background:#fff;border:3px solid #9ca3af}.xo-dot.xdot{color:#c71919;border-color:#c71919}.xo-dot.odot{color:#1769c2;border-color:#1769c2}.xo-empty{width:34px;height:34px;border-radius:50%;border:1px dashed #d1d5db}.xo-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.xo-legend span{font-size:13px;font-weight:800}.streak{font-weight:900}.history-xo-title{margin:0 0 6px}.history-xo-note{font-size:12px;color:#6b7280;margin-top:6px}
+
+.finance-line{font-size:13px;margin-top:6px;padding:8px 10px;background:#f8fafc;border-radius:10px}.plus{color:#15803d}.minus{color:#b91c1c}.muted{color:#64748b}
+</style>
+</head>
+<body>
+<header><h1>📊 ระบบบันทึกและวิเคราะห์สถิติ</h1><p>บันทึกข้อมูล • สถิติ • วิเคราะห์ย้อนหลัง</p></header>
+
+<nav>
+<button type="button" class="active" data-tab="add">➕ บันทึก</button>
+<button type="button" data-tab="history">📋 ประวัติ</button>
+<button type="button" data-tab="finance">💰 การเงิน</button>
+<button type="button" data-tab="stats">📈 สถิติ/วิเคราะห์</button>
+<button type="button" data-tab="settings">⚙️ ตั้งค่า</button>
+</nav>
+
+<main>
+<section id="add">
+<div class="card">
+<label>ก้าม</label>
+<div class="grid4">
+<button type="button" class="pick" data-key="claw" data-value="0">0</button>
+<button type="button" class="pick" data-key="claw" data-value="0.5">0.5</button>
+<button type="button" class="pick" data-key="claw" data-value="1">1</button>
+<button type="button" class="pick" data-key="claw" data-value="1.5">1.5</button>
+<button type="button" class="pick" data-key="claw" data-value="2">2</button>
+</div>
+
+<label>ลักษณะก้าม</label>
+<div class="grid2">
+<button type="button" class="pick" data-key="clawType" data-value="ก้ามเหลือม">ก้ามเหลือม</button>
+<button type="button" class="pick" data-key="clawType" data-value="ก้ามเสมอ">ก้ามเสมอ</button>
+<button type="button" class="pick" data-key="clawType" data-value="เล็กข้างใหญ่ข้าง">เล็กข้างใหญ่ข้าง</button>
+<button type="button" class="pick" data-key="clawType" data-value="ใหญ่ทั้งสองข้าง">ใหญ่ทั้งสองข้าง</button>
+<button type="button" class="pick" data-key="clawType" data-value="เล็กทั้งสองข้าง">เล็กทั้งสองข้าง</button>
+<button type="button" class="pick" data-key="clawType" data-value="ไม่มีก้าม">ไม่มีก้าม</button>
+<button type="button" class="pick" data-key="clawType" data-value="มี 1 ก้าม">มี 1 ก้าม</button>
+</div>
+<div id="oneClawWrap" class="hidden" style="margin-top:9px">
+<label>รายละเอียดกรณีมี 1 ก้าม</label>
+<div class="grid2">
+<button type="button" class="pick" data-key="oneClawSide" data-value="ซ้าย">ซ้าย</button>
+<button type="button" class="pick" data-key="oneClawSide" data-value="ขวา">ขวา</button>
+</div>
+<div class="grid2" style="margin-top:8px">
+<button type="button" class="pick" data-key="oneClawSize" data-value="เล็ก">เล็ก</button>
+<button type="button" class="pick" data-key="oneClawSize" data-value="ใหญ่">ใหญ่</button>
+</div>
+</div>
+<div id="overlapWrap" class="hidden" style="margin-top:9px">
+<label>เหลือมเท่าไร</label>
+<div class="grid3">
+<button type="button" class="pick" data-key="overlap" data-value="1 มิล">1 มิล</button>
+<button type="button" class="pick" data-key="overlap" data-value="2 มิล">2 มิล</button>
+<button type="button" class="pick" data-key="overlap" data-value="3 มิล">3 มิล</button>
+<button type="button" class="pick" data-key="overlap" data-value="1 ข้อนิ้วมือ">1 ข้อนิ้วมือ</button>
+</div>
+</div>
+
+<label>ขา</label>
+<div class="grid4">
+<button type="button" class="pick" data-key="leg" data-value="0">0</button><button type="button" class="pick" data-key="leg" data-value="0.5">0.5</button><button type="button" class="pick" data-key="leg" data-value="1">1</button><button type="button" class="pick" data-key="leg" data-value="1.5">1.5</button><button type="button" class="pick" data-key="leg" data-value="2">2</button><button type="button" class="pick" data-key="leg" data-value="2.5">2.5</button><button type="button" class="pick" data-key="leg" data-value="3">3</button><button type="button" class="pick" data-key="leg" data-value="3.5">3.5</button>
+<button type="button" class="pick" data-key="leg" data-value="4">4</button><button type="button" class="pick" data-key="leg" data-value="4.5">4.5</button><button type="button" class="pick" data-key="leg" data-value="5">5</button><button type="button" class="pick" data-key="leg" data-value="5.5">5.5</button><button type="button" class="pick" data-key="leg" data-value="6">6</button><button type="button" class="pick" data-key="leg" data-value="6.5">6.5</button><button type="button" class="pick" data-key="leg" data-value="7">7</button><button type="button" class="pick" data-key="leg" data-value="7.5">7.5</button><button type="button" class="pick" data-key="leg" data-value="8">8</button>
+</div>
+
+<label>ขนาดตัว</label>
+<div class="grid3">
+<button type="button" class="pick" data-key="size" data-value="เล็ก">เล็ก</button>
+<button type="button" class="pick" data-key="size" data-value="กลาง">กลาง</button>
+<button type="button" class="pick" data-key="size" data-value="ใหญ่">ใหญ่</button>
+</div>
+
+
+
+<label>สัญลักษณ์</label>
+<div class="grid2">
+<button type="button" class="pick symbolPick" data-key="symbol" data-value="X" style="font-weight:900;color:#d32f2f">X</button>
+<button type="button" class="pick symbolPick" data-key="symbol" data-value="O" style="font-weight:900;color:#1565c0">O</button>
+</div>
+
+<label>น้ำหนักที่ออก</label>
+<input id="weight" type="number" step="0.01" inputmode="decimal" placeholder="เช่น 1.25">
+
+
+
+<label>หมายเหตุ</label>
+<textarea id="note" rows="3" placeholder="รายละเอียดเพิ่มเติม"></textarea>
+
+<div id="saveMsg" class="msg"></div>
+<button type="button" id="saveBtn" class="primary">💾 บันทึกข้อมูล</button>
+</div>
+</section>
+
+<section id="history" class="hidden">
+<div class="card">
+<div class="grid2"><input id="search" placeholder="ค้นหา..."><button type="button" id="clearBtn" class="secondary danger">ล้างทั้งหมด</button></div>
+<div class="card" style="margin-top:12px">
+<h3 class="history-xo-title">🔴🔵 สถิติ X / O</h3>
+<div id="xoStats" class="xo-summary"></div>
+<div class="xo-legend"><span style="color:#c71919">⭕ X = แดง</span><span style="color:#1769c2">⭕ O = น้ำเงิน</span></div>
+<div class="history-xo-note">แสดงลำดับสัญลักษณ์จากรายการล่าสุดย้อนหลังในรูปแบบคล้ายตารางสถิติบาคาร่า</div>
+<div id="xoRoadWrap" class="xo-road-wrap"><div id="xoRoad" class="xo-road"></div></div>
+</div>
+<div id="historyList"></div>
+</div>
+</section>
+
+<section id="finance" class="hidden">
+<div class="card">
+<h2>💰 บันทึกการเงิน</h2>
+<label>ฝั่งที่เราเล่น</label>
+<div class="grid2">
+<button type="button" class="pick financePick" data-fkey="playSide" data-fvalue="X" style="font-weight:900;color:#d32f2f">X</button>
+<button type="button" class="pick financePick" data-fkey="playSide" data-fvalue="O" style="font-weight:900;color:#1565c0">O</button>
+</div>
+<label>ผลที่ออก</label>
+<div class="grid2">
+<button type="button" class="pick financePick" data-fkey="result" data-fvalue="X" style="font-weight:900;color:#d32f2f">X</button>
+<button type="button" class="pick financePick" data-fkey="result" data-fvalue="O" style="font-weight:900;color:#1565c0">O</button>
+</div>
+<label>จำนวนเงินที่เล่น</label>
+<input id="financeMoney" type="number" min="0" step="1" inputmode="numeric" placeholder="เช่น 500">
+<label>สถานะการจ่าย</label>
+<div class="grid2">
+<button type="button" class="pick financePick" data-fkey="paid" data-fvalue="ยังไม่จ่าย">ยังไม่จ่าย</button>
+<button type="button" class="pick financePick" data-fkey="paid" data-fvalue="จ่ายแล้ว">จ่ายแล้ว</button>
+</div>
+<div id="financePreview" class="msg">กรุณาเลือกข้อมูลเพื่อคำนวณยอดสุทธิ</div>
+<button type="button" id="saveFinanceBtn" class="primary">💾 บันทึกรายการการเงิน</button>
+</div>
+<div class="card">
+<h2>📋 รายการการเงิน</h2>
+<div id="financeSummary"></div>
+<div id="financeList"></div>
+</div>
+</section>
+<section id="stats" class="hidden">
+<div class="card">
+<h2>🔎 วิเคราะห์ข้อมูลย้อนหลัง</h2>
+<p class="muted">วิเคราะห์จากข้อมูลย้อนหลังแบบเจาะจง โดยเลือก ก้าม + ขา + ลักษณะก้าม + รายละเอียดก้าม + ขนาดตัว + คู่/คี่ + จำนวนครั้งย้อนหลัง</p>
+<div class="grid2">
+<div><label>ก้าม</label><select id="anClaw2"></select></div>
+<div><label>ขา</label><select id="anLeg2"></select></div>
+</div>
+<label>ลักษณะก้าม</label>
+<select id="anClawType2">
+<option value="ทั้งหมด">ทั้งหมด</option>
+<option>ก้ามเท่า</option><option>ก้ามเหลือม</option><option>ก้ามเสมอ</option><option>เล็กข้างใหญ่ข้าง</option><option>ใหญ่ทั้งสองข้าง</option><option>เล็กทั้งสองข้าง</option><option>ไม่มีก้าม</option><option>มี 1 ก้าม</option>
+</select>
+<div id="anOneClawWrap2" class="hidden" style="margin-top:9px">
+<label>รายละเอียด 1 ก้าม</label>
+<div class="grid2"><select id="anOneClawSide2"><option value="ทั้งหมด">ทั้งหมด</option><option>ซ้าย</option><option>ขวา</option></select><select id="anOneClawSize2"><option value="ทั้งหมด">ทั้งหมด</option><option>เล็ก</option><option>ใหญ่</option></select></div>
+</div>
+<div id="anOverlapWrap2" class="hidden" style="margin-top:9px">
+<label>เหลือมเท่าไร</label>
+<select id="anOverlap2"><option value="ทั้งหมด">ทั้งหมด</option><option>1 มิล</option><option>2 มิล</option><option>3 มิล</option><option>1 ข้อนิ้วมือ</option></select>
+</div>
+<label>ขนาดตัว</label>
+<div class="grid3">
+<button type="button" class="pick anSize" data-value="ทั้งหมด">ทั้งหมด</button>
+<button type="button" class="pick anSize" data-value="เล็ก">เล็ก</button>
+<button type="button" class="pick anSize" data-value="กลาง">กลาง</button>
+<button type="button" class="pick anSize" data-value="ใหญ่">ใหญ่</button>
+</div>
+<label>คู่ / คี่</label>
+<div class="grid2">
+<button type="button" class="pick anOE" data-value="ทั้งหมด">ทั้งหมด</button>
+<button type="button" class="pick anOE" data-value="คู่">คู่</button>
+<button type="button" class="pick anOE" data-value="คี่">คี่</button>
+</div>
+<label>ดูย้อนหลัง</label>
+<select id="anLimit2">
+<option value="all">ทั้งหมด</option><option value="10">10 ครั้งล่าสุด</option><option value="20">20 ครั้งล่าสุด</option><option value="50">50 ครั้งล่าสุด</option><option value="100">100 ครั้งล่าสุด</option>
+</select>
+<div id="analysis2" style="margin-top:14px"></div>
+</div>
+</section>
+
+<section id="settings" class="hidden">
+<div class="card">
+<h2>⚙️ ตั้งค่า</h2>
+<p class="muted">รุ่นนี้ล็อกตัวเลือกหลักไว้ให้ตรงกับที่กำหนด เพื่อไม่ให้ปุ่มหายหรือกดไม่ได้</p>
+<label>ค่าน้ำ (%)</label>
+<div class="setting"><input id="waterRate" type="number" min="0" step="0.1"><button type="button" id="waterBtn" class="secondary">💾 บันทึก</button></div>
+<p class="muted">ค่าเริ่มต้น 10% • หักค่าน้ำเฉพาะรายการผล +</p>
+</div>
+</section>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+var state={claw:"",clawType:"",overlap:"",oneClawSide:"",oneClawSize:"",leg:"",oddEven:"",size:"",money:"",symbol:"",result:"",playSide:"",paid:""};
+var data=[];
+try{data=JSON.parse(localStorage.getItem("statEntries")||"[]");if(!Array.isArray(data))data=[];}catch(e){data=[];}
+data=data.map(function(e){
+  if(e.claw==null && e.kim!=null)e.claw=e.kim;
+  if(e.clawType==null)e.clawType="";
+  if(e.overlap==null)e.overlap="";
+  return e;
+});
+var financeState={playSide:"",result:"",paid:""};
+var financeData=[];
+try{financeData=JSON.parse(localStorage.getItem("financeData")||"[]");if(!Array.isArray(financeData))financeData=[];}catch(e){financeData=[];}
+
+function $(id){return document.getElementById(id);}
+function rate(){
+  var n=Number(localStorage.getItem("waterRate"));
+  return Number.isFinite(n)&&n>=0?n:10;
+}
+function saveData(){localStorage.setItem("statEntries",JSON.stringify(data));}
+function updateOverlapUI(){
+  var wrap=$("overlapWrap");
+  if(!wrap)return;
+  wrap.classList.toggle("hidden",state.clawType!=="ก้ามเหลือม");
+  var one=$("oneClawWrap"); if(one)one.classList.toggle("hidden",state.clawType!=="มี 1 ก้าม");
+  if(state.clawType!=="ก้ามเหลือม"){state.overlap="";document.querySelectorAll('button[data-key="overlap"]').forEach(function(x){x.classList.remove("selected");});}
+}
+
+function financeRate(){return Number(localStorage.getItem("waterRate")||10);}
+function calcFinance(rec){
+  var amount=Number(rec.amount)||0, win=rec.playSide===rec.result, fee=win?amount*(financeRate()/100):0;
+  var net=win?(amount-fee):-amount;
+  return {win:win,fee:fee,net:net,receivable:win&&rec.paid!=="จ่ายแล้ว"?net:0,received:win&&rec.paid==="จ่ายแล้ว"?net:0};
+}
+function updateFinancePreview(){
+  var el=$("financePreview"); if(!el)return;
+  var amount=Number($("financeMoney").value)||0;
+  if(!financeState.playSide||!financeState.result||!amount){el.textContent="กรุณาเลือกฝั่ง ผล และจำนวนเงิน";return;}
+  var c=calcFinance({playSide:financeState.playSide,result:financeState.result,amount:amount,paid:financeState.paid});
+  el.innerHTML="ผล: <b>"+(c.win?"ชนะ":"แพ้")+"</b> | หัก "+financeRate()+"% = "+c.fee.toFixed(2)+" | สุทธิ: <b class=\""+(c.net>=0?"plus":"minus")+"\">"+(c.net>=0?"+":"")+c.net.toFixed(2)+"</b>"+(financeState.paid==="จ่ายแล้ว"?" | รับแล้ว":" | ค้างรับ: "+c.receivable.toFixed(2));
+}
+function saveFinance(){
+  var amount=Number($("financeMoney").value)||0;
+  if(!financeState.playSide||!financeState.result||!amount||!financeState.paid){alert("กรุณาเลือกฝั่ง ผล จำนวนเงิน และสถานะการจ่ายให้ครบ");return;}
+  financeData.unshift({id:Date.now(),date:new Date().toLocaleString(),playSide:financeState.playSide,result:financeState.result,amount:amount,paid:financeState.paid,rate:financeRate()});
+  localStorage.setItem("financeData",JSON.stringify(financeData));
+  $("financeMoney").value=""; financeState={playSide:"",result:"",paid:""};
+  document.querySelectorAll(".financePick").forEach(function(b){b.classList.remove("selected")});
+  updateFinancePreview(); renderFinance();
+}
+function deleteFinance(id){if(!confirm("ต้องการลบรายการการเงินนี้หรือไม่?"))return; financeData=financeData.filter(function(x){return x.id!==id});localStorage.setItem("financeData",JSON.stringify(financeData));renderFinance();}
+function togglePaid(id){var r=financeData.find(function(x){return x.id===id});if(!r)return;r.paid=r.paid==="จ่ายแล้ว"?"ยังไม่จ่าย":"จ่ายแล้ว";localStorage.setItem("financeData",JSON.stringify(financeData));renderFinance();}
+function renderFinance(){
+  var list=$("financeList"),sum=$("financeSummary"); if(!list||!sum)return;
+  var total=0,received=0,receivable=0,fees=0;
+  financeData.forEach(function(r){var c=calcFinance(r);total+=c.net;fees+=c.fee;received+=c.received;receivable+=c.receivable});
+  sum.innerHTML='<div class="stats"><div>รายการ <b>'+financeData.length+'</b></div><div>ค่าน้ำ <b>'+fees.toFixed(2)+'</b></div><div>รับแล้ว <b>'+received.toFixed(2)+'</b></div><div>ค้างรับ <b>'+receivable.toFixed(2)+'</b></div><div>สุทธิ <b class="'+(total>=0?'plus':'minus')+'">'+(total>=0?'+':'')+total.toFixed(2)+'</b></div></div>';
+  if(!financeData.length){list.innerHTML='<p class="muted">ยังไม่มีรายการการเงิน</p>';return;}
+  list.innerHTML=financeData.map(function(r){var c=calcFinance(r);return '<div class="card" style="margin-top:10px"><div><b>'+r.playSide+'</b> | ผล '+r.result+' | '+Number(r.amount).toLocaleString()+' บาท</div><div class="muted">'+r.date+' | หัก '+r.rate+'% = '+c.fee.toFixed(2)+'</div><div>สุทธิ: <b class="'+(c.net>=0?'plus':'minus')+'">'+(c.net>=0?'+':'')+c.net.toFixed(2)+'</b> | '+(r.paid==='จ่ายแล้ว'?'✅ จ่ายแล้ว':'⏳ ยังไม่จ่าย')+'</div><div style="margin-top:8px"><button type="button" class="smallBtn financeTogglePaid" data-finance-id="'+r.id+'">'+(r.paid==='จ่ายแล้ว'?'เปลี่ยนเป็นยังไม่จ่าย':'เปลี่ยนเป็นจ่ายแล้ว')+'</button> <button type="button" class="smallBtn danger financeDelete" data-finance-id="'+r.id+'">🗑️ ลบรายการ</button></div></div>';}).join('');
+}
+
+function showTab(id){
+  document.querySelectorAll("main>section").forEach(function(s){s.classList.toggle("hidden",s.id!==id);});
+  document.querySelectorAll("nav button").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-tab")===id);});
+  if(id==="history")renderHistory();
+  if(id==="finance")renderFinance();
+  if(id==="stats")renderStats();
+  if(id==="settings")$("waterRate").value=rate();
+}
+
+document.addEventListener("click",function(ev){
+  var b=ev.target.closest("button");
+  if(!b)return;
+
+  var tab=b.getAttribute("data-tab");
+  if(tab){showTab(tab);return;}
+
+  var fkey=b.getAttribute("data-fkey");
+  if(fkey){financeState[fkey]=b.getAttribute("data-fvalue");document.querySelectorAll('button[data-fkey="'+fkey+'"]').forEach(function(x){x.classList.toggle("selected",x===b)});updateFinancePreview();return;}
+
+  var paidId=b.getAttribute("data-finance-paid");
+  if(paidId){togglePaid(Number(paidId));return;}
+  var toggleId=b.classList.contains("financeTogglePaid")?b.getAttribute("data-finance-id"):null;
+  if(toggleId!==null){togglePaid(Number(toggleId));return;}
+  var deleteId=b.classList.contains("financeDelete")?b.getAttribute("data-finance-id"):null;
+  if(deleteId!==null){deleteFinance(Number(deleteId));return;}
+
+  var key=b.getAttribute("data-key");
+  if(key){
+    state[key]=b.getAttribute("data-value");
+    document.querySelectorAll('button[data-key="'+key+'"]').forEach(function(x){x.classList.toggle("selected",x===b);});
+    if(key==="money")$("moneyCustom").value="";
+    if(key==="symbol")$("symbolCustom").value="";
+    if(key==="clawType")updateOverlapUI();
+    return;
+  }
+
+  if(b.id==="saveBtn"){saveEntry();return;}
+  if(b.id==="saveFinanceBtn"){saveFinance();return;}
+  if(b.id==="clearBtn"){
+    if(confirm("ต้องการลบข้อมูลทั้งหมดจริงหรือไม่?")){data=[];localStorage.removeItem("statEntries");renderHistory();renderStats();}
+    return;
+  }
+  if(b.id==="waterBtn"){
+    var r=Number($("waterRate").value);
+    if(!Number.isFinite(r)||r<0){alert("กรุณาใส่ค่าน้ำ 0 หรือมากกว่า");return;}
+    localStorage.setItem("waterRate",String(r));alert("บันทึกค่าน้ำ "+r+"% แล้ว");renderStats();return;
+  }
+  if(b.classList.contains("anSize")){anSize=b.getAttribute("data-value");fillAnalysis2();renderAnalysis2();return;}
+  if(b.classList.contains("anOE")){anOE=b.getAttribute("data-value");fillAnalysis2();renderAnalysis2();return;}
+  if(b.id==="csvBtn"){exportCSV();return;}
+  if(b.dataset.del){
+    var id=Number(b.dataset.del);
+    if(confirm("ลบรายการนี้?")){data=data.filter(function(x){return Number(x.id)!==id;});saveData();renderHistory();renderStats();}
+  }
+});
+
+function clearSelections(){
+  state={claw:"",clawType:"",overlap:"",oneClawSide:"",oneClawSize:"",leg:"",oddEven:"",size:"",money:"",symbol:"",result:"",playSide:"",paid:""};
+  document.querySelectorAll("button[data-key]").forEach(function(b){b.classList.remove("selected");});
+  $("weight").value="";$("note").value="";
+  updateOverlapUI();
+}
+function saveEntry(){
+  var msg=$("saveMsg");
+  if(state.claw===""||state.clawType===""||state.leg===""||state.size===""||state.symbol===""){
+    msg.textContent="⚠️ กรุณาเลือก ก้าม + ลักษณะก้าม + ขา + ขนาดตัว + สัญลักษณ์ ให้ครบ";return;
+  }
+  if(state.clawType==="มี 1 ก้าม" && (state.oneClawSide==="" || state.oneClawSize==="")){
+    msg.textContent="⚠️ กรุณาเลือกด้านและขนาดของก้ามที่มี 1 ก้าม";return;
+  }
+  if(state.clawType==="ก้ามเหลือม" && state.overlap===""){
+    msg.textContent="⚠️ กรุณาเลือกจำนวนเหลือม";return;
+  }
+  data.unshift({
+    id:Date.now(),date:new Date().toLocaleString("th-TH"),
+    claw:state.claw,kim:state.claw,clawType:state.clawType,overlap:state.overlap,oneClawSide:state.oneClawSide,oneClawSize:state.oneClawSize,leg:state.leg,
+    oddEven:"",size:state.size,money:0,waterRate:rate(),water:0,net:0,playSide:"",paid:"",received:0,receivable:0,
+    weight:Number($("weight").value)||0,symbol:state.symbol,result:win?"+":"-",note:$("note").value.trim()
+  });
+  saveData();
+  clearSelections();
+  msg.textContent="✅ บันทึกข้อมูลสำเร็จ";
+  setTimeout(function(){msg.textContent="";},5000);
+}
+
+function renderXORoad(){
+  var statsBox=$('xoStats'), road=$('xoRoad');
+  if(!statsBox||!road)return;
+  var arr=data.slice().sort(function(a,b){return Number(a.id)-Number(b.id);}).filter(function(e){return String(e.symbol||'').trim().toUpperCase()==='X'||String(e.symbol||'').trim().toUpperCase()==='O';});
+  var x=arr.filter(function(e){return String(e.symbol).trim().toUpperCase()==='X';}).length;
+  var o=arr.length-x, total=arr.length;
+  var xPct=total?x/total*100:0, oPct=total?o/total*100:0;
+  var streak=0,last='',bestX=0,bestO=0;
+  arr.forEach(function(e){var v=String(e.symbol).trim().toUpperCase();if(v===last)streak++;else{streak=1;last=v;}if(v==='X')bestX=Math.max(bestX,streak);if(v==='O')bestO=Math.max(bestO,streak);});
+  var current=total?String(arr[total-1].symbol).trim().toUpperCase():'-',currentLen=total?1:0;
+  for(var i=total-2;i>=0&&current!=='-';i--){if(String(arr[i].symbol).trim().toUpperCase()===current)currentLen++;else break;}
+  statsBox.innerHTML='<div class="xo-stat"><div class="xo-big" style="color:#c71919">X</div><b>'+x+'</b> ครั้ง ('+xPct.toFixed(1)+'%)</div><div class="xo-stat"><div class="xo-big" style="color:#1769c2">O</div><b>'+o+'</b> ครั้ง ('+oPct.toFixed(1)+'%)</div><div class="xo-stat">ชุด X สูงสุด<br><span class="streak">'+bestX+' ครั้งติด</span></div><div class="xo-stat">ชุด O สูงสุด<br><span class="streak">'+bestO+' ครั้งติด</span></div><div class="xo-stat" style="grid-column:1/-1">ล่าสุด <b style="color:'+(current==='X'?'#c71919':current==='O'?'#1769c2':'#111827')+'">'+current+'</b> · ต่อเนื่อง '+currentLen+' ครั้ง · รวม '+total+' รายการ</div>';
+  road.innerHTML='';
+  if(!arr.length){road.innerHTML='<div class="muted" style="grid-column:1/-1;grid-row:1/-1;display:flex;align-items:center;justify-content:center">ยังไม่มีข้อมูล X/O</div>';return;}
+  // Baccarat-style Big Road: continue downward, then start a new column on change; after row 6, continue horizontally.
+  var cells=[], col=0,row=0,prev=null;
+  arr.forEach(function(e){
+    var v=String(e.symbol).trim().toUpperCase();
+    if(prev===null){col=0;row=0;}
+    else if(v===prev){
+      if(row<5)row++;else col++;
+    }else{col++;row=0;}
+    cells.push({v:v,col:col,row:row});prev=v;
+  });
+  var maxCol=cells.reduce(function(m,c){return Math.max(m,c.col);},0);
+  road.style.gridTemplateColumns='repeat('+(maxCol+1)+',42px)';
+  cells.forEach(function(c){
+    var cell=document.createElement('div');cell.className='xo-cell';cell.style.gridColumn=(c.col+1);cell.style.gridRow=(c.row+1);
+    var dot=document.createElement('div');dot.className='xo-dot '+(c.v==='X'?'xdot':'odot');dot.textContent=c.v;cell.appendChild(dot);road.appendChild(cell);
+  });
+}
+
+function renderHistory(){
+  renderXORoad();
+  var q=$("search").value.trim().toLowerCase(),box=$("historyList");box.innerHTML="";
+  var arr=data.filter(function(e){return JSON.stringify(e).toLowerCase().indexOf(q)>=0;});
+  if(!arr.length){box.innerHTML='<p class="muted">ยังไม่มีข้อมูล</p>';return;}
+  arr.forEach(function(e){
+    var net=Number(e.net??(e.result==="+"?Number(e.money)-Number(e.water||0):-Number(e.money)));
+    var d=document.createElement("div");d.className="entry";
+    d.innerHTML='<div class="row"><b>'+e.oddEven+' · ก้าม '+(e.claw??e.kim??"-")+' · '+(e.clawType||"-")+(e.overlap?" ("+e.overlap+")":"")+' · ขา '+e.leg+' · ตัว '+(e.size||"-")+'</b><b class="'+(e.result==="+"?"plus":"minus")+'">'+e.result+'</b></div>'+
+      '<div>🎯 เล่นฝั่ง <b>'+((e.playSide||'-'))+'</b> · 💰 '+Number(e.money||0).toLocaleString()+' บาท · 💧 หัก '+Number(e.water||0).toLocaleString(undefined,{maximumFractionDigits:2})+' บาท ('+Number(e.waterRate||10).toLocaleString(undefined,{maximumFractionDigits:1})+'%)</div>'+
+      '<div>💵 สุทธิ <b class="'+(net>=0?"plus":"minus")+'">'+net.toLocaleString(undefined,{maximumFractionDigits:2})+' บาท</b> · '+(e.paid==="จ่ายแล้ว"?'✅ จ่ายแล้ว':'⏳ ยังไม่จ่าย')+' · '+(e.symbol||"-")+' · ⚖️ '+(e.weight||0)+'</div>'+
+      '<div class="muted">'+e.date+(e.note?" · "+e.note:"")+'</div>';
+    var btn=document.createElement("button");btn.type="button";btn.className="secondary danger";btn.textContent="ลบ";btn.dataset.del=e.id;d.appendChild(btn);box.appendChild(d);
+  });
+}
+
+function group(key){
+  var m={};data.forEach(function(e){var v=String(e[key]??"-");m[v]=(m[v]||0)+1;});
+  return Object.entries(m).sort(function(a,b){return b[1]-a[1];});
+}
+function groupHTML(key){
+  var a=group(key),n=data.length;if(!a.length)return '<p class="muted">ยังไม่มีข้อมูล</p>';
+  return a.map(function(x){var p=x[1]/n*100;return '<div>'+x[0]+' — <b>'+x[1]+' ('+p.toFixed(1)+'%)</b><div class="bar"><i style="width:'+p+'%"></i></div></div>';}).join("");
+}
+function renderStats(){
+  fillAnalysis2();
+  renderAnalysis2();
+}
+function clawValues(){return ["0","0.5","1","1.5","2"];}
+function legValues(){return ["0","0.5","1","1.5","2","2.5","3","3.5","4","4.5","5","5.5","6","6.5","7","7.5","8"];}
+function clawTypeValues(){return ["ก้ามเท่า","ก้ามเหลือม","ก้ามเสมอ","เล็กข้างใหญ่ข้าง","ใหญ่ทั้งสองข้าง","เล็กทั้งสองข้าง","ไม่มีก้าม","มี 1 ก้าม"];}
+function overlapValues(){return ["1 มิล","2 มิล","3 มิล","1 ข้อนิ้วมือ"];}
+function options(arr,old){return arr.map(function(v){return '<option value="'+v+'">'+v+'</option>';}).join("");}
+var anSize="ทั้งหมด",anOE="ทั้งหมด";
+function updateAnalysis2ClawUI(){
+  var type=$("anClawType2"),wrap=$("anOverlapWrap2"),one=$("anOneClawWrap2");
+  if(type && wrap)wrap.classList.toggle("hidden",type.value!=="ก้ามเหลือม");
+  if(type && one)one.classList.toggle("hidden",type.value!=="มี 1 ก้าม");
+}
+function fillAnalysis2(){
+  var k=$("anClaw2"),l=$("anLeg2"),oldK=k.value,oldL=l.value;
+  k.innerHTML=options(clawValues()); l.innerHTML=options(legValues());
+  if(oldK)k.value=oldK;if(oldL)l.value=oldL;
+  document.querySelectorAll(".anSize").forEach(function(b){b.classList.toggle("selected",b.getAttribute("data-value")===anSize);});
+  document.querySelectorAll(".anOE").forEach(function(b){b.classList.toggle("selected",b.getAttribute("data-value")===anOE);});
+  updateAnalysis2ClawUI();
+}
+function analysisDistribution(arr,key){
+  var m={};
+  arr.forEach(function(e){var v=String(e[key]==null?"-":e[key]);m[v]=(m[v]||0)+1;});
+  return Object.keys(m).map(function(k){return [k,m[k]];}).sort(function(a,b){return b[1]-a[1];});
+}
+function renderAnalysis2(){
+  var k=$("anClaw2").value,l=$("anLeg2").value,lim=$("anLimit2").value;
+  var ct=$("anClawType2").value,ov=$("anOverlap2").value;
+  var ocs=$("anOneClawSide2").value,ocz=$("anOneClawSize2").value;
+  updateAnalysis2ClawUI();
+  var arr=data.filter(function(e){
+    if(String(e.claw??e.kim)!==String(k)||String(e.leg)!==String(l))return false;
+    if(ct!=="ทั้งหมด"&&String(e.clawType||"")!==ct)return false;
+    if(ct==="ก้ามเหลือม"&&ov!=="ทั้งหมด"&&String(e.overlap||"")!==ov)return false;
+    if(ct==="มี 1 ก้าม"&&ocs!=="ทั้งหมด"&&String(e.oneClawSide||"")!==ocs)return false;
+    if(ct==="มี 1 ก้าม"&&ocz!=="ทั้งหมด"&&String(e.oneClawSize||"")!==ocz)return false;
+    if(anSize!=="ทั้งหมด"&&String(e.size)!==anSize)return false;
+    if(anOE!=="ทั้งหมด"&&String(e.oddEven)!==anOE)return false;
+    return true;
+  }).sort(function(a,b){return Number(b.id)-Number(a.id);});
+  if(lim!=="all")arr=arr.slice(0,Number(lim));
+  var box=$("analysis2"),n=arr.length;
+  if(!n){box.innerHTML='<div class="warn">ยังไม่มีข้อมูลตรงกับ <b>ก้าม '+k+' · '+ct+(ct==="ก้ามเหลือม"?" · "+ov:"")+' · ขา '+l+' · '+anSize+' · '+anOE+'</b></div>';return;}
+  var oe=analysisDistribution(arr,"oddEven"),sz=analysisDistribution(arr,"size"),sy=analysisDistribution(arr,"symbol"),rs=analysisDistribution(arr,"result"),cts=analysisDistribution(arr,"clawType"),ovs=analysisDistribution(arr,"overlap");
+  var avg=arr.reduce(function(s,e){return s+Number(e.weight||0);},0)/n;
+  var net=arr.reduce(function(s,e){return s+Number(e.net||0);},0);
+  var h='<h3>ผลวิเคราะห์</h3><p><b>ก้าม '+k+' · ลักษณะ '+ct+(ct==="ก้ามเหลือม"?" · เหลือม "+ov:"")+(ct==="มี 1 ก้าม"?" · "+ocs+" · "+ocz:"")+' · ขา '+l+' · ขนาด '+anSize+' · '+anOE+'</b></p>';
+  h+='<p>พบข้อมูล <b>'+n+' ครั้ง</b> · น้ำหนักเฉลี่ย <b>'+avg.toFixed(2)+'</b> · สุทธิรวม <b class="'+(net>=0?'plus':'minus')+'">'+net.toLocaleString(undefined,{maximumFractionDigits:2})+' บาท</b></p>';
+  if(n<10)h+='<div class="warn">⚠️ มีข้อมูลน้อยกว่า 10 ครั้ง ผลเปอร์เซ็นต์อาจผันผวนมาก ควรใช้เป็นข้อมูลประกอบเท่านั้น</div>';
+  function pills(title,d){return '<p><b>'+title+'</b><br>'+d.map(function(x){return '<span class="pill">'+x[0]+' '+x[1]+' ครั้ง ('+(x[1]/n*100).toFixed(1)+'%)</span>';}).join("")+'</p>';}
+  h+=pills("ลักษณะก้าม",cts);
+  if(ct==="ก้ามเหลือม")h+=pills("ขนาดเหลือม",ovs);
+  h+=pills("คู่ / คี่",oe)+pills("ขนาดตัว",sz)+pills("สัญลักษณ์",sy)+pills("ผล + / -",rs);
+  if(oe.length){var top=oe[0];h+='<div class="good">📌 จากข้อมูลย้อนหลังชุดนี้ <b>'+top[0]+'</b> มีสัดส่วนสูงสุด <b>'+(top[1]/n*100).toFixed(1)+'%</b> ('+top[1]+'/'+n+')<br><span class="muted">เป็นสถิติย้อนหลัง ไม่ใช่การรับประกันผลครั้งถัดไป</span></div>';}
+  box.innerHTML=h;
+}
+
+$("anClaw2").addEventListener("change",renderAnalysis2);
+$("anLeg2").addEventListener("change",renderAnalysis2);
+$("anClawType2").addEventListener("change",function(){updateAnalysis2ClawUI();renderAnalysis2();});
+$("anOverlap2").addEventListener("change",renderAnalysis2);
+$("anOneClawSide2").addEventListener("change",renderAnalysis2);
+$("anOneClawSize2").addEventListener("change",renderAnalysis2);
+$("anLimit2").addEventListener("change",renderAnalysis2);
+$("waterRate").value=rate();
+fillAnalysis2();
+updateOverlapUI();
+renderAnalysis2();
+})();
+
+// V36: direct button handlers for critical actions (more reliable on iPhone/Safari)
+(function(){
+  var saveBtn=document.getElementById("saveBtn");
+  if(saveBtn){saveBtn.addEventListener("click",function(ev){ev.stopPropagation();saveEntry();});}
+  var saveFinanceBtn=document.getElementById("saveFinanceBtn");
+  if(saveFinanceBtn){saveFinanceBtn.addEventListener("click",function(ev){ev.stopPropagation();saveFinance();});}
+  document.querySelectorAll(".financeTogglePaid").forEach(function(btn){btn.addEventListener("click",function(ev){ev.stopPropagation();togglePaid(Number(btn.getAttribute("data-finance-id")));});});
+  document.querySelectorAll(".financeDelete").forEach(function(btn){btn.addEventListener("click",function(ev){ev.stopPropagation();deleteFinance(Number(btn.getAttribute("data-finance-id")));});});
+})();
+</script>
+</body>
+</html>
